@@ -34,7 +34,8 @@ data class GameDetailDto(
 
     companion object {
 
-        fun toDto(game: Game, playoffRoundLocalized: String?): GameDetailDto {
+
+        fun toDto(game: Game): GameDetailDto {
             return GameDetailDto(
                     id = game.id!!,
                     scoreHome = game.scoreHome,
@@ -53,7 +54,13 @@ data class GameDetailDto(
                     comments = game.comments.sortedBy { it.created },
                     voided = game.voided,
                     isReplayExists = game.replay != null,
-                    playoffRoundLocalized = playoffRoundLocalized
+                    playoffRoundLocalized = game.playoff?.let { playoff ->
+                        localizePlayoffRound(
+                                game.tournament.threeWay!!,
+                                game.tournament.maxRounds,
+                                playoff.round
+                        )
+                    }
             )
         }
 

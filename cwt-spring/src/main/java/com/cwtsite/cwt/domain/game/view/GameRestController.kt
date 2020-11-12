@@ -113,7 +113,7 @@ constructor(private val gameService: GameService, private val userService: UserS
     @RequestMapping("/{id}", method = [RequestMethod.GET])
     fun getGame(@PathVariable("id") id: Long): ResponseEntity<GameDetailDto> {
         return gameService.findById(id)
-                .map { ResponseEntity.ok(mapToDtoWithTitle(it)) }
+                .map { ResponseEntity.ok(GameDetailDto.toDto(it)) }
                 .orElseThrow { RestException("Game not found", HttpStatus.NOT_FOUND, null) }
     }
 
@@ -122,18 +122,6 @@ constructor(private val gameService: GameService, private val userService: UserS
         val game = gameService.findById(id)
                 .orElseThrow { RestException("Game $id not found", HttpStatus.NOT_FOUND, null) }
         return ResponseEntity.ok(streamService.findStreams(game).map { StreamDto.toDto(it) })
-    }
-
-    private fun mapToDtoWithTitle(game: Game): GameDetailDto {
-        return GameDetailDto.toDto(
-                game,
-                when {
-                    game.playoff() -> GameDetailDto.localizePlayoffRound(
-                            game.tournament.threeWay!!,
-                            treeService.getNumberOfPlayoffRoundsInTournament(game.tournament),
-                            game.playoff!!.round)
-                    else -> null
-                })
     }
 
     @RequestMapping("", method = [RequestMethod.POST])
@@ -203,7 +191,7 @@ constructor(private val gameService: GameService, private val userService: UserS
             }
         }
         return ResponseEntity.ok(PageDto.toDto(
-                games.map { mapToDtoWithTitle(it) },
+                games.map { GameDetailDto.toDto(it) },
                 listOf("reportedAt,Reported at", "ratingsSize,Ratings", "commentsSize,Comments")))
     }
 
